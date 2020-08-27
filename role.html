@@ -1,0 +1,254 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<!-- 角色 -->
+<div id="role">
+	<div>
+		<form class="form-inline">
+			<input class="btn btn-default" type="button" value="新增" id="add">
+		</form>
+	</div>
+
+	<div>
+		<table class="table table-hover">
+			<thead>
+				<tr style="background: #E8E8E8;">
+					<th>序号</th>
+					<th>角色名</th>
+					<th>描述</th>
+					<th>状态</th>
+					<th>操作</th>
+				</tr>
+			</thead>
+
+			<tbody>
+				<th:block th:each="role:${session.roles}">
+					<tr>
+						<td th:text="${role.id}">1</td>
+						<td th:text="${role.name}">经理</td>
+						<td th:text="${role.description}">这是一个经理用户,啦啦啦啦</td>
+						<td th:if="${role.flag==1}">正常</td>
+						<td th:if="${role.flag!=1}">注销</td>
+						<!-- 给其赋id值 -->
+						<td><i class="layui-icon layui-icon-edit editUser" th:attr="id=${role.id}"></i> <i
+							class="layui-icon layui-icon-delete deleteUser" th:attr="id=${role.id}"></i></td>
+					</tr>
+				</th:block>
+			</tbody>
+		</table>
+	</div>
+	<div class="fenye">
+		<nav aria-label="Page navigation">
+			<ul class="pagination">
+				<li><a href="#" aria-label="Previous"
+					th:if="${session.roles.hasPrevious()==false}"> <span
+						aria-hidden="true" style="color: grey">上一页</span>
+				</a></li>
+
+				<!-- 点击事件需要将当前页码数的 
+				     th;onclick="'doOnclock()'"js函数-->
+				<li><a href="#" aria-label="Previous"
+					th:if="${session.roles.hasPrevious()==true}"> <span
+						aria-hidden="true"
+						th:onclick="|pageSelect(${session.roles.number-1})|">上一页</span>
+				</a></li>
+				<!-- 递增输出页面的下标
+				     #numbers.sequence(起始数字,终止数字)-->
+				<th:block th:each="num:$session.roles.totalPages">
+					<li  
+		    	th:each="num:${#numbers.sequence(1,session.roles.totalPages)}"
+		    	th:attr="class=${session.roles.number==(num-1)}?'active':''"
+		    	>
+		    	<a href="#" th:text="${num}" th:onclick="|pageSelect(${num-1})|">1</a>
+		    </li>
+					</th:each>
+					<li><a href="hasNext" aria-label="Next"
+						th:if="${session.roles.hasNext()==false}"> <span
+							aria-hidden="true">下一页</span>
+					</a></li>
+					<li><a href="hasNext" aria-label="Next"
+						th:if="${session.roles.hasNext()==true}"> <span
+							aria-hidden="true"
+							th:onclick="|pageSelect(${session.roles.number+1})|">下一页</span>
+					</a></li>
+			</ul>
+		</nav>
+	</div>
+	<!-- 删除模态框 -->
+	<div class="modal" id="deleteModal">
+		<div class="modal-dialog" style="width: 350px;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title">是否确定删除</h4>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default " data-dismiss="modal">取消</button>
+					<button type="button" class="btn btn-primary">确定</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- 新增模态框 -->
+	<div class="modal" id="toAdd">
+		<div class="modal-dialog" style="height: 400px; overflow: auto;">
+			<div class="modal-content">
+				<form id="add-form">
+					<div class="modal-body">
+						<div class="form-group">
+							<label>角色名:</label> <input type="text" name="name"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>描述:</label> <input type="text" name="description"
+								class="form-control">
+						</div>
+						<div class="form-group">
+							<label>状态:</label> <select name="flag" id=""
+								class="form-control">
+								<option value="1">正常</option>
+								<option value="0">注销</option>
+							</select>
+						</div>
+					</div>
+				</form>
+				<div class="modal-footer">
+					<button class="btn" style="background: #ccc">取消</button>
+					<button class="btn" style="background: #ccc">保存</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+<style>
+#role {
+	width: 1140px;
+	overflow: hidden;
+}
+
+.pagination>.active>a, .pagination>.active>a:focus, .pagination>.active>a:hover,
+	.pagination>.active>span, .pagination>.active>span:focus, .pagination>.active>span:hover
+	{
+	background-color: #ccc;
+	border-color: #ccc;
+}
+
+.pagination>li>a, .pagination>li>span {
+	color: black;
+}
+
+.fenye {
+	margin-left: 400px;
+}
+
+.form-inline {
+	margin-top: 15px;
+	margin-left: 10px;
+	margin-bottom: 20px;
+}
+
+input[type=submit] {
+	margin-left: 50px;
+}
+
+#add {
+	margin-left: 1020px;
+}
+
+.table th, td {
+	text-align: center;
+}
+
+#deleteModal {
+	margin-top: 100px;
+}
+
+#toAdd {
+	margin-top: 50px;
+}
+</style>
+<script type="text/javascript">
+	/* 定义一个pageSelect函数  参数时页码数下标-1*/
+	function pageSelect(pageIndex) {
+		//将pageIndex传递给后台,让后台根据pageIndex做分页查询
+		//重新加载选中的部分页面
+		//根据前台传递的页码下标数,进行分页查询信息
+		$("#role").load("/findRoleByPageIndex", {
+			pageIndex : pageIndex
+		});
+	}
+	$(function() {
+	    //声明一个id,为后面的更新与删除
+	    var roled;
+		// 显示删除模态框
+		$('.deleteUser').click(function() {
+		//获取当前想要删除的id 
+		roleId = $(this).attr("id");
+			$('#deleteModal').show();
+		})
+		// 关闭删除模态框
+		$('.close').click(function() {
+			$('#deleteModal').hide();
+		})
+		// 关闭删除模态框
+		$('.btn-default').click(function() {
+			$('#deleteModal').hide();
+		})
+		// 确定删除
+		$('.btn-primary').click(function() {
+			$('#deleteModal').hide();
+			//给后台发送请求 将roleId传过去 后台完成删除操作 前台页面再刷新一次
+			$.post("deleteRoleById",{roleId:roleId},function(data){
+				alert(data);
+				//刷新一次页面
+				$("#role").load("toRole");
+			});
+		})
+		// 点击新增显示模态框
+		$('#add').click(function() {
+			$('#toAdd').show();
+		})
+		// 新增模态框关闭
+		$('button:contains(取消)').on('click', function() {
+			$('button[type=reset]').trigger('click');
+			$('#toAdd').hide();
+			// form表单置空
+			document.getElementById('add-form').reset();
+		})
+		// 新增模态框保存
+		//:过滤选择器
+		$('button:contains(保存)').on('click', function() {
+			$('#toAdd').hide();
+			//获取模态框的值
+			//将用户传入给后台
+			//修改的时候,需要id
+			
+			var name = $("input[name=name]").val();
+			var descript = $("input[name=descript]").val();
+			//选择select 下的option下的后代选择器中的值
+			var flag = $("select[name=flag] option:selected").val();
+		    //key值必须与表单对象中的名字相对应
+			$.post("saveRole",{id:roledId,name:name,description:description,flag:flag}),function(data){
+				alert(data);
+				//让页面再重新加载一次
+				$("#role").load("toRole");
+			};
+		})
+		// 点击编辑显示模态框
+		$('.editUser').click(function() {
+			//根据这一行的角色id查询出角色信息 赋值给模态框中的文本框与下拉框
+			//this触发的当前点击事件的对象
+			roleId= $(this).attr("id")
+			$.get("findRoleById",{roleId:roleId},function(data){
+				//data是后台查出的角色对象
+                $("input[name=name]").val(data.name);
+				$("input[descript=descript]").val(data.descript);
+				$("input[flag=flag]").val(data.flag);
+			})
+			$('#toAdd').show();
+			
+		})
+	})
+</script>
